@@ -5,7 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -20,12 +22,39 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 	Font deadSmallFont;
 	Timer frameDraw;
 	Rocketship s;
-
+	ObjectManager z;
+	Timer alienSpawn;
+	
+	public static BufferedImage image;
+	public static boolean needImage = true;
+	public static boolean gotImage = false;	
+	
+	void loadImage(String imageFile) {
+	    if (needImage) {
+	        try {
+	            image = ImageIO.read(this.getClass().getResourceAsStream(imageFile));
+		    gotImage = true;
+	        } catch (Exception e) {
+	            
+	        }
+	        needImage = false;
+	    }
+	  
+	}
+	  void startGame() {
+	        alienSpawn = new Timer(1000 , z);
+	        alienSpawn.start();
+	    }
 	void updateMenuState() {
 
 	}
 
 	void updateGameState() {
+z.purgeObjescts();
+s.update();
+		z.update();
+		
+
 
 	}
 
@@ -46,14 +75,20 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
 	void drawGameState(Graphics g) {
 	
-		g.setColor(Color.BLACK);
-		g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
-		s.draw(g);
-		
-		
+		if (gotImage) {
+			g.drawImage(image, 0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT, null);
+		} else {
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
+		}
+	
+		z.draw(g);
+		z.purgeObjescts();
+
 	}
 
 	void drawEndState(Graphics g) {
+		alienSpawn.stop();
 		g.setColor(Color.RED);
 		g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
 		g.setColor(Color.BLACK);
@@ -65,13 +100,19 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 	}
 
 	GamePanel() {
-		s = new Rocketship(250,700,50,50);
+		s = new Rocketship(250, 700, 50, 50);
+		z = new ObjectManager(s);
 		titleFont = new Font("Arial", Font.PLAIN, 48);
 		smallFont = new Font("Arial", Font.BOLD, 24);
 		deadTitleFont = new Font("Arial", Font.PLAIN, 56);
 		deadSmallFont = new Font("Arial", Font.PLAIN, 24);
 		frameDraw = new Timer(1000 / 60, this);
 		frameDraw.start();
+		if (needImage) {
+		    loadImage ("space.png");
+		}
+		
+		
 	}
 
 	@Override
@@ -91,11 +132,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 		if (currentState == MENU) {
 			updateMenuState();
 		} else if (currentState == GAME) {
+		
 			updateGameState();
 		} else if (currentState == END) {
 			updateEndState();
 		}
-		System.out.println("Action");
+
 		repaint();
 	}
 
@@ -104,31 +146,59 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 		// TODO Auto-generated method stub
 
 	}
-
 	@Override
 	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
+	
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 			if (currentState == END) {
+				
 				currentState = MENU;
-			} else {
-				currentState++;
+			}
+			if (currentState == MENU) {
+				startGame();
+				currentState =GAME;
+				
+				}
+			
+			 else {
+				 alienSpawn.stop();
+				currentState = END;
 			}
 		}
-		if (e.getKeyCode() == KeyEvent.VK_UP) {
+		if (e.getKeyCode() == KeyEvent.VK_UP ) {
 			System.out.println("UP");
-		} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-			System.out.println("LEFT");
-		} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-			System.out.println("RIGHT");
-		} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-			System.out.println("DOWN");
+			s.up();
+
 		}
+		if (e.getKeyCode() == KeyEvent.VK_LEFT ) {
+			System.out.println("LEFT");
+			s.left();
+
+		}
+		if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+			System.out.println("RIGHT");
+			s.right();
+		}
+		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+			System.out.println("DOWN");
+			s.down();
+		
+		}
+
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
 		// TODO Auto-generated method stub
-
+		if(e.getKeyCode()==KeyEvent.VK_UP||e.getKeyCode()==KeyEvent.VK_DOWN) {
+		s.yspeed = 0;
+		}
+		if(e.getKeyCode()==KeyEvent.VK_RIGHT||e.getKeyCode()==KeyEvent.VK_LEFT) {
+		s.xspeed = 0;
+		}
+		if (e.getKeyCode()==KeyEvent.VK_SPACE) {
+			z.addProjectile(s.getProjectile());
+		}
 	}
 }
