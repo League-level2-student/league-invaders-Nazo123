@@ -29,6 +29,8 @@ public class Projectile extends GameObject {
 	}
 	void update() {
 		y-=speed;
+		   super.update();
+		   
 	}
 	void loadImage(String imageFile) {
 	    if (needImage) {

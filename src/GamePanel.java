@@ -8,6 +8,7 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -42,7 +43,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 	  
 	}
 	  void startGame() {
-	        alienSpawn = new Timer(1000 , z);
+	        alienSpawn = new Timer(500 , z);
 	        alienSpawn.start();
 	    }
 	void updateMenuState() {
@@ -50,9 +51,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 	}
 
 	void updateGameState() {
-z.purgeObjescts();
+
 s.update();
 		z.update();
+		if(!s.isActive) {
+			currentState = END;
+		}
 		
 
 
@@ -95,7 +99,7 @@ s.update();
 		g.setFont(deadTitleFont);
 		g.drawString("Game Over", 110, 150);
 		g.setFont(deadSmallFont);
-		g.drawString("You killed " + "" + " enemies", 135, 300);
+		g.drawString("You killed " + z.getScore() + " enemies", 135, 300);
 		g.drawString("Press ENTER to restart", 120, 450);
 	}
 
@@ -152,7 +156,8 @@ s.update();
 	
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 			if (currentState == END) {
-				
+				s = new Rocketship(250, 700, 50, 50);
+				z = new ObjectManager(s);
 				currentState = MENU;
 			}
 			if (currentState == MENU) {
@@ -167,21 +172,21 @@ s.update();
 			}
 		}
 		if (e.getKeyCode() == KeyEvent.VK_UP ) {
-			System.out.println("UP");
+		
 			s.up();
 
 		}
 		if (e.getKeyCode() == KeyEvent.VK_LEFT ) {
-			System.out.println("LEFT");
+		
 			s.left();
 
 		}
 		if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-			System.out.println("RIGHT");
+			
 			s.right();
 		}
 		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-			System.out.println("DOWN");
+
 			s.down();
 		
 		}
@@ -197,8 +202,11 @@ s.update();
 		if(e.getKeyCode()==KeyEvent.VK_RIGHT||e.getKeyCode()==KeyEvent.VK_LEFT) {
 		s.xspeed = 0;
 		}
-		if (e.getKeyCode()==KeyEvent.VK_SPACE) {
+		if (e.getKeyCode()==KeyEvent.VK_SPACE&currentState==GAME) {
 			z.addProjectile(s.getProjectile());
+		}
+		else if (currentState == MENU){
+		JOptionPane.showMessageDialog(null, "Use arrow keys to move. Press SPACE to fire. Try not to die");
 		}
 	}
 }
